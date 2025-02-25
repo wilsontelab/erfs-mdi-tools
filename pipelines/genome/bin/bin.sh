@@ -1,9 +1,19 @@
 #!/bin/bash
 
-echo "creating genome bins based on:"
+# action:
+#     create a genome bins file at the highest resolution with exclusion and GC metadata
+# input:
+#     ${GENOME_FASTA}
+#     ${EXCLUSIONS_BED}
+#     ${GAPS_FILE}
+#     ${BIN_SIZE}
+# outputs:
+#     ${GENOME_BINS_BED}
+
+echo "creating ${GENOME} genome bins based on:"
 echo "  ${GENOME_FASTA}"
-echo "  ${GENOME_GAPS_FILE}"
-echo "  ${GENOME_EXCLUSIONS_BED}"
+echo "  ${EXCLUSIONS_BED}"
+echo "  ${GAPS_FILE}"
 echo "  bin size = ${BIN_SIZE}"
 
 # filter and sort chromosomes in a manner consistent with downstream steps
@@ -17,7 +27,7 @@ bedtools makewindows -g - -w ${BIN_SIZE} |
 # mark (but do not delete) bins that are excluded from analysis as (partially) overlapping with:
 #   genome gaps
 #   problematic regions
-bedtools intersect -c -a - -b ${GENOME_EXCLUSIONS_BED} <(cut -f2-4 ${GENOME_GAPS_FILE}) | 
+bedtools intersect -c -a - -b ${EXCLUSIONS_BED} <(cut -f2-4 ${GAPS_FILE}) | 
 awk '{print $0"\t"($NF>0 ? 1 : 0)}' | # thus, output is: chrom,start0,end1,excluded=[0,1]
 cut -f1-3,5 |
 
@@ -39,6 +49,6 @@ echo
 echo "head of ${GENOME_BINS_BED}:"
 zcat ${GENOME_BINS_BED} | head
 echo
-echo "chrom ranges"
+echo "chrom summary"
 zcat ${GENOME_BINS_BED} | 
-bedtools groupby -g 1 -c 2,3,4 -o first,last,mean
+bedtools groupby -g 1 -c 2,3,4,5 -o first,last,mean,median

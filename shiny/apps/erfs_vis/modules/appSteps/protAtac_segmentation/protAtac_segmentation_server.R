@@ -1,18 +1,18 @@
 #----------------------------------------------------------------------
-# server components for the protAtac_segmentation appStep module
+# server components for the erfs_segmentation appStep module
 #----------------------------------------------------------------------
 
 #----------------------------------------------------------------------
 # BEGIN MODULE SERVER
 #----------------------------------------------------------------------
-protAtac_segmentationServer <- function(id, options, bookmark, locks) { 
+erfs_segmentationServer <- function(id, options, bookmark, locks) { 
     moduleServer(id, function(input, output, session) {    
 #----------------------------------------------------------------------
 
 #----------------------------------------------------------------------
 # initialize module
 #----------------------------------------------------------------------
-module <- 'protAtac_segmentation'
+module <- 'erfs_segmentation'
 appStepDir <- getAppStepDir(module)
 options <- setDefaultOptions(options, stepModuleInfo[[module]])
 settings <- activateMdiHeaderLinks( # uncomment as needed
@@ -110,7 +110,7 @@ trainingDistributions <- reactive({
     req(trainingRegions, nrow(trainingRegions) > 0)
     sourceId <- sourceId()
     req(sourceId)
-    bd <- paBinData(sourceId)
+    bd <- erfsBinData(sourceId)
     setkeyv(trainingRegions, c("chrom", "start0", "end1"))
     binOverlaps <- foverlaps(
         bd$bins$genome,
@@ -224,7 +224,7 @@ solveTrainingHMM_async <- function(sourceId, trainingSetName, hmm){
 solveTrainingHMM <- function(){ # this is blocking at present, how long will it take?
     sourceId <- sourceId()
     req(sourceId)
-    bd <- paBinData(sourceId)
+    bd <- erfsBinData(sourceId)
     d <- trainingDistributions()
     hmm <- new_hmmEPTable(
         emissProbs = sapply(c("genome","training"), function(modelType){
@@ -258,7 +258,7 @@ observeEvent(solveTrainingHMM_monitor(), {
         tr <- getTrainingResults(sourceId = new$sourceId)
         tr[[new$trainingSetName]] <- list(
             states = new$states,
-            segments = paBinData(sourceId)$bins$genome[, .(
+            segments = erfsBinData(sourceId)$bins$genome[, .(
                 chrom, 
                 start0, 
                 end1, 

@@ -1,0 +1,45 @@
+---
+options:
+    brca2-calls: 
+        order: 1
+        short: null
+        type: string
+        required: true
+        default: null
+        description: "path to external brca2 enrichment calls"
+    rad51-calls:
+        order: 2
+        short: null
+        type: string
+        required: true
+        default: null
+        description: "path to external rad51 enrichment calls"
+
+    brca2-ctl-cov: 
+        order: 3
+        short: null
+        type: string
+        required: true
+        default: null
+        description: "path to brca2-ctl coverage file"
+    brca2-shrna-cov:
+        order: 4
+        short: null
+        type: string
+        required: true
+        default: null
+        description: "path to brca2-shrna coverage file"
+    rad51-ctl-cov:
+        order: 5
+        short: null
+        type: string
+        required: true
+        default: null
+        description: "path to rad51-ctl coverage file"
+    rad51-sirna-cov:
+        order: 6
+        short: null
+        type: string
+        required: true
+        default: null
+        description: "path to rad51-sirna coverage file"

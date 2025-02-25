@@ -1,15 +1,15 @@
 #----------------------------------------------------------------------
-# UI components for the protAtac_normalizeGC appStep module
+# UI components for the erfs_copyNumber appStep module
 #----------------------------------------------------------------------
 
 # module ui function
-protAtac_normalizeGCUI <- function(id, options) {
+erfs_copyNumberUI <- function(id, options) {
 
     # initialize namespace
     ns <- NS(id)
     
     # override missing options to module defaults
-    options <- setDefaultOptions(options, stepModuleInfo$protAtac_normalizeGC)
+    options <- setDefaultOptions(options, stepModuleInfo$erfs_copyNumber)
 
     # UI functions
     plotBox_ <- function(title, ui){
@@ -60,29 +60,26 @@ protAtac_normalizeGCUI <- function(id, options) {
         # GC bias plots
         fluidRow(
             plotBox_(
-                "GC Bias",
-                interactiveScatterplotUI(ns("gcBiasPlot"), height = '400px')
-            ),
-            plotBox_(
-                "GC Bias Residuals",
-                interactiveScatterplotUI(ns("gcResidualBiasPlot"), height = '400px')
+                "Bin Counts",
+                interactiveScatterplotUI(ns("binCountsPlot"), height = '400px')
             )
+            
         ),
-        fluidRow(
-            staticPlotBoxUI(
-                ns("gcBiasFitComposite"), 
-                "Composite of GC Bias Fits",
-                width = 6,
-                status = "primary",
-                collapsible = TRUE,
-                solidHeader = TRUE,
-                collapsed = FALSE
-            ),
-            column(
-                width = 6,
-                downloadLink(ns("downloadGcResiduals"), label = "download GC residual Z-scores")
-            )
-        ),
+        # fluidRow(
+        #     staticPlotBoxUI(
+        #         ns("gcBiasFitComposite"), 
+        #         "Composite of GC Bias Fits",
+        #         width = 6,
+        #         status = "primary",
+        #         collapsible = TRUE,
+        #         solidHeader = TRUE,
+        #         collapsed = FALSE
+        #     ),
+        #     column(
+        #         width = 6,
+        #         downloadLink(ns("downloadGcResiduals"), label = "download GC residual Z-scores")
+        #     )
+        # ),
         NULL
     )
 }

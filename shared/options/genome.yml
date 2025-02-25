@@ -5,12 +5,26 @@ options:
         short: g
         type: string
         required: false
-        default: mm39
+        default: hg38
         description: "name of the reference genome to use"
-    genome-dir:
+    genome-fasta:
         order: 2
         short: G
         type: string
-        required: false
+        required: true
         default: null
-        description: "directory with indexed <--genome>.fa or genome.fa file [.../mdi/resources/genomes/<--genome>]"
+        description: "path to the reference genome fasta file"
+    exclusions-bed:
+        order: 3
+        short: E
+        type: string
+        required: true
+        default: null
+        description: "path to BED file with regions to exclude from analysis"
+    gaps-file:
+        order: 4
+        short: P
+        type: string
+        required: true
+        default: null
+        description: "path UCSC gaps.txt with gap information for the reference genome"

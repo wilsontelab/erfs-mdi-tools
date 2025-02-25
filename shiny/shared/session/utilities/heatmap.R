@@ -26,7 +26,7 @@ scoreMapLabelImage <- function(height, config, label = NULL){
 scoreMapLegendImage <- function(height, config, label = NULL){
     x <- matrix("white", nrow = config$legendWidthPixels, ncol = height) %>% 
     matrixToCImg(config$legendWidthPixels, height)
-    if(!is.null(label)) x <- x %>% imager::draw_text(5, 1, label, "black", fsize = height - 2)
+    if(!is.null(label)) x <- x %>% imager::draw_text(5, 1, toupper(label), "black", fsize = height - 3)
     x
 }
 # ...group header, representing a single score type; text identifies the score type and input data
@@ -34,7 +34,7 @@ scoreMapHeaderImage <- function(scoreType, config){
     x <- matrix("white", nrow = config$plotWidthPixels, ncol = config$headerHeightPixels) %>% 
     matrixToCImg(config$plotWidthPixels, config$headerHeightPixels) %>% 
     imager::draw_text(1, 2, scoreType$trackHeaderLabel, "black", fsize = config$headerHeightPixels - 2)
-    paScoreMapYBreaks <<- rbind(paScoreMapYBreaks, data.table(
+    erfsScoreMapYBreaks <<- rbind(erfsScoreMapYBreaks, data.table(
         height = config$headerHeightPixels + 1, scoreTypeName = "NA", rowType = "header", seriesName = "NA"
     ))
     imager::imappend(
@@ -71,7 +71,7 @@ scoreMapRowImage <- function(scoreTypeName, binI, b, scoreValues, colorFn, confi
     rep(config$Row_Height_Pixels) %>%
     matrixToCImg(config$plotWidthPixels, config$Row_Height_Pixels)
     seriesName <- if(is.null(legendLabel)) "NA" else legendLabel
-    paScoreMapYBreaks <<- rbind(paScoreMapYBreaks, data.table(
+    erfsScoreMapYBreaks <<- rbind(erfsScoreMapYBreaks, data.table(
         height = config$Row_Height_Pixels + 1, scoreTypeName = scoreTypeName, rowType = rowType, seriesName = seriesName
     ))
     imager::imappend(
@@ -85,31 +85,33 @@ scoreMapRowImage <- function(scoreTypeName, binI, b, scoreValues, colorFn, confi
 }
 
 # coordinate the assembly of a one complete score map group image for a single score type
-# called by the paScoreMap track builder function
+# called by the erfsScoreMap track builder function
 scoreMapGroupImage <- function(scoreTypeName, sourceId, bd, binI, b, config){
     startSpinner(session, message = paste("rendering", scoreTypeName))
+    sepImage <- scoreMapSeparatorImage(config)
     scoreLevel <- getScoreLevel(scoreTypeName)
     scoreType <- getScoreType(sourceId, scoreTypeName)
-    sepImage <- scoreMapSeparatorImage(config)
-    summaryScores <- getStageTypeDeltaScores(sourceId, scoreTypeName)[[1]][[scoreType$summaryType]][binI]
-    seriesAggScores <- getSeriesAggScores(sourceId, scoreTypeName, bd$samples, config)
+    # summaryScores <- getStageTypeDeltaScores(sourceId, scoreTypeName)[[1]][[scoreType$summaryType]][binI]
+    seriesAggScores <- getSeriesAggScores(sourceId, scoreTypeName)
+
     imager::imappend(c(
 
         # a single row representing the fully aggregated score results for a scoreType
         # this is the only row for genome gc and txn scoreTypes
         list(
             scoreMapHeaderImage(scoreType, config),
-            sepImage,
-            scoreMapRowImage(
-                scoreTypeName, binI, b, 
-                summaryScores, 
-                getSeriesSummaryColors, config, "summary", 
-                labelLabel  = if(scoreLevel == "sample") "delta" else scoreType$trackSummaryLabel,
-                legendLabel = if(scoreLevel == "sample") "round - elong" else NULL
-            ),
             sepImage
-        ),
-        if(scoreLevel == "sample" && config$Aggregate_By != "none") c(
+            # scoreMapRowImage(
+            #     scoreTypeName, binI, b, 
+            #     summaryScores, 
+            #     getSeriesSummaryColors, config, "summary", 
+            #     labelLabel  = if(scoreLevel == "sample") "delta" else scoreType$trackSummaryLabel,
+            #     legendLabel = NULL # if(scoreLevel == "sample") "round - elong" else NULL
+            # ),
+            # sepImage
+        )
+        ,
+        # if(scoreLevel == "sample" && config$Aggregate_By != "none") c(
 
             # one or more rows representing sample-level primary scores
             # depending on the user setting for Aggregate_By, there may be one row per sample, stage, or stage type
@@ -124,22 +126,22 @@ scoreMapGroupImage <- function(scoreTypeName, sourceId, bd, binI, b, config){
                     legendLabel = seriesName
                 )
             ),
-            list(sepImage),
-
-            # one or more rows representing intra-sample (or intra-group) _relative_ scores, expressed as per-sample/group quantiles
-            # thus, these should show symmetric distributions for each sample or group with ~equal numbers of high and low scores
-            # these rows are only not needed for GC residual Z scores which are already centered and symmetric
-            if(scoreTypeName != "gcrz") lapply(
-                names(seriesAggScores),
-                function(seriesName) scoreMapRowImage(
-                    scoreTypeName, binI, b, 
-                    seriesAggScores[[seriesName]]$quantile[binI], 
-                    getSeriesQuantileColors, config, "quantile",
-                    labelLabel = if(names(seriesAggScores)[1] == seriesName) scoreType$summaryType else NULL,
-                    legendLabel = seriesName
-                )
-            ) else list(),
             list(sepImage)
-        ) else list()
+
+            # # one or more rows representing intra-sample (or intra-group) _relative_ scores, expressed as per-sample/group quantiles
+            # # thus, these should show symmetric distributions for each sample or group with ~equal numbers of high and low scores
+            # # these rows are only not needed for GC residual Z scores which are already centered and symmetric
+            # if(scoreTypeName != "gcrz") lapply(
+            #     names(seriesAggScores),
+            #     function(seriesName) scoreMapRowImage(
+            #         scoreTypeName, binI, b, 
+            #         seriesAggScores[[seriesName]]$quantile[binI], 
+            #         getSeriesQuantileColors, config, "quantile",
+            #         labelLabel = if(names(seriesAggScores)[1] == seriesName) scoreType$summaryType else NULL,
+            #         legendLabel = seriesName
+            #     )
+            # ) else list(),
+            # list(sepImage)
+        # ) else list()
     ), axis = 'y')
 }

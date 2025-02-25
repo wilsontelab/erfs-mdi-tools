@@ -1,18 +1,18 @@
 #----------------------------------------------------------------------
-# server components for the protAtac_scoreSummary appStep module
+# server components for the erfs_scoreSummary appStep module
 #----------------------------------------------------------------------
 
 #----------------------------------------------------------------------
 # BEGIN MODULE SERVER
 #----------------------------------------------------------------------
-protAtac_scoreSummaryServer <- function(id, options, bookmark, locks) { 
+erfs_scoreSummaryServer <- function(id, options, bookmark, locks) { 
     moduleServer(id, function(input, output, session) {    
 #----------------------------------------------------------------------
 
 #----------------------------------------------------------------------
 # initialize module
 #----------------------------------------------------------------------
-module <- 'protAtac_scoreSummary'
+module <- 'erfs_scoreSummary'
 appStepDir <- getAppStepDir(module)
 options <- setDefaultOptions(options, stepModuleInfo[[module]])
 settings <- activateMdiHeaderLinks( # uncomment as needed
@@ -32,15 +32,15 @@ sourceId <- dataSourceTableServer(
     "dataSourceTable", 
     selection = "single"
 ) 
-spermatidStages <- spermatidStageTableServer(
-    "spermatidStageTable", 
-    sourceId, # a reactive that returns the id of one selected source
-    selection = "multiple"
-)
+# geneTargets <- spermatidStageTableServer(
+#     "geneTargetTable", 
+#     sourceId, # a reactive that returns the id of one selected source
+#     selection = "multiple"
+# )
 allSamples <- reactive({ # vector of the names of all co-analyzed samples
     sourceId <- sourceId()
     req(sourceId)
-    paBinData(sourceId)$samples
+    names(erfsBinData(sourceId)$samples)
 })
 
 #----------------------------------------------------------------------
@@ -84,19 +84,21 @@ sampleDistributionPlot <- staticPlotBoxServer(
         if(scoreLevel != 'sample') req(FALSE)
         sourceId <- sourceId()
         req(sourceId)
-        samples <- spermatidStages$selectedSamples()
-        allSamples <- allSamples()
+
+        # samples <- allSamples() # spermatidStages$selectedSamples()
+        # allSamples <- allSamples()
+
         plotDistributions(
             plot        = sampleDistributionPlot, 
             scoreType   = getScoreType(sourceId, input$scoreType), 
-            scores      = getSampleScores(sourceId, input$scoreType, samples),
-            colors      = getSampleColorsByStage(allSamples, samples),
+            scores      = getSampleScores(sourceId, input$scoreType),
+            colors      = traceColors$sample,
             message     = "plotting samples"
         )
     }
 )
-stageDistributionPlot <- staticPlotBoxServer(
-    "stageDistributionPlot",
+sampleDeltaDistributionPlot <- staticPlotBoxServer(
+    "sampleDeltaDistributionPlot",
     maxHeight = "400px",
     lines   = TRUE,
     legend  = TRUE,
@@ -107,62 +109,62 @@ stageDistributionPlot <- staticPlotBoxServer(
         if(scoreLevel != 'sample') req(FALSE)
         sourceId <- sourceId()
         req(sourceId)
-        samples <- spermatidStages$selectedSamples()
-        allSamples <- allSamples()
+        # samples <- spermatidStages$selectedSamples()
+        # allSamples <- allSamples()
         plotDistributions(
-            plot        = stageDistributionPlot, 
+            plot        = sampleDeltaDistributionPlot, 
             scoreType   = getScoreType(sourceId, input$scoreType), 
-            scores      = getStageScores(sourceId, input$scoreType, samples),
-            colors      = getStageColors(allSamples, samples),
-            message     = "plotting stages"
+            scores      = getSampleDeltaScores(sourceId, input$scoreType),
+            colors      = traceColors$gene_target,
+            message     = "plotting gene targets"
         )
     }
 )
-stageTypeDistributionPlot <- staticPlotBoxServer(
-    "stageTypeDistributionPlot",
-    maxHeight = "400px",
-    lines   = TRUE,
-    legend  = TRUE,
-    margins = TRUE,
-    title   = TRUE,
-    create = function() {
-        scoreLevel <- getScoreLevel(input$scoreType)
-        if(scoreLevel != 'sample') req(FALSE)
-        sourceId <- sourceId()
-        req(sourceId)
-        samples <- spermatidStages$selectedSamples()
-        allSamples <- allSamples()
-        plotDistributions(
-            plot        = stageTypeDistributionPlot, 
-            scoreType   = getScoreType(sourceId, input$scoreType), 
-            scores      = getStageTypeScores(sourceId, input$scoreType, samples),
-            colors      = getStageTypeColors(sourceId, allSamples, samples),
-            message     = "plotting stageTypes"
-        )
-    }
-)
-deltaDistributionPlot <- staticPlotBoxServer(
-    "deltaDistributionPlot",
-    maxHeight = "400px",
-    lines   = TRUE,
-    legend  = TRUE,
-    margins = TRUE,
-    title   = TRUE,
-    create = function() {
-        scoreLevel <- getScoreLevel(input$scoreType)
-        sourceId <- sourceId()
-        req(sourceId)
-        plotDistributions(
-            plot        = deltaDistributionPlot, 
-            scoreType   = getScoreType(sourceId, input$scoreType), 
-            scores      = getStageTypeDeltaScores(sourceId, input$scoreType, clean = TRUE),
-            colors      = c(stageType_delta = CONSTANTS$plotlyColors$black),
-            message     = "plotting delta",
-            legend      = FALSE,
-            isDelta     = scoreLevel == "sample"
-        )
-    }
-)
+# # stageTypeDistributionPlot <- staticPlotBoxServer(
+# #     "stageTypeDistributionPlot",
+# #     maxHeight = "400px",
+# #     lines   = TRUE,
+# #     legend  = TRUE,
+# #     margins = TRUE,
+# #     title   = TRUE,
+# #     create = function() {
+# #         scoreLevel <- getScoreLevel(input$scoreType)
+# #         if(scoreLevel != 'sample') req(FALSE)
+# #         sourceId <- sourceId()
+# #         req(sourceId)
+# #         samples <- spermatidStages$selectedSamples()
+# #         allSamples <- allSamples()
+# #         plotDistributions(
+# #             plot        = stageTypeDistributionPlot, 
+# #             scoreType   = getScoreType(sourceId, input$scoreType), 
+# #             scores      = getStageTypeScores(sourceId, input$scoreType, samples),
+# #             colors      = getStageTypeColors(sourceId, allSamples, samples),
+# #             message     = "plotting stageTypes"
+# #         )
+# #     }
+# # )
+# deltaDistributionPlot <- staticPlotBoxServer(
+#     "deltaDistributionPlot",
+#     maxHeight = "400px",
+#     lines   = TRUE,
+#     legend  = TRUE,
+#     margins = TRUE,
+#     title   = TRUE,
+#     create = function() {
+#         scoreLevel <- getScoreLevel(input$scoreType)
+#         sourceId <- sourceId()
+#         req(sourceId)
+#         plotDistributions(
+#             plot        = deltaDistributionPlot, 
+#             scoreType   = getScoreType(sourceId, input$scoreType), 
+#             scores      = getStageTypeDeltaScores(sourceId, input$scoreType, clean = TRUE),
+#             colors      = c(stageType_delta = CONSTANTS$plotlyColors$black),
+#             message     = "plotting delta",
+#             legend      = FALSE,
+#             isDelta     = scoreLevel == "sample"
+#         )
+#     }
+# )
 
 #----------------------------------------------------------------------
 # define bookmarking actions

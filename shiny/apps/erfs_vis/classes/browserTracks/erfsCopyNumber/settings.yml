@@ -1,0 +1,31 @@
+# uncomment this section to include standard settings from widgets/browserTrack/settings.yml
+# see: https://github.com/wilsontelab/genomex-mdi-tools
+include:
+    - height
+    # - yAxisLimit
+
+# uncomment this section to specify settings that are imported from a parent trackType
+# trackType:
+#     - <trackType> # must find genomex-mdi-tools//shiny/shared/session/types/browserTrackTypes/<trackType>/settings.yml
+
+# uncomment this section to specify settings that are common to multiple tracks in an app or suite
+# shared:
+#     - ../shared_settings.yml # interpreted relative to the track's own settings.yml file
+
+# uncomment this section to specify track-specific settings, using the same format as for settingsServer
+# see: https://midataint.github.io/mdi-apps-framework/docs/settings/yaml-declarations.html
+settings:
+    ERFS_Copy_Number:
+        Gene_Target: 
+            type:   radioButtons
+            choices:
+                - brca2
+                - rad51
+            selected:
+                - brca2
+
+# uncomment this section to specify track-specific settings
+# presets:
+#     Preset_Name:
+#         Family:
+#             Option: value

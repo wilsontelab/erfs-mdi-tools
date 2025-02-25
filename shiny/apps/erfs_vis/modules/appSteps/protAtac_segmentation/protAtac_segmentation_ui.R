@@ -1,15 +1,15 @@
 #----------------------------------------------------------------------
-# UI components for the protAtac_segmentation appStep module
+# UI components for the erfs_segmentation appStep module
 #----------------------------------------------------------------------
 
 # module ui function
-protAtac_segmentationUI <- function(id, options) {
+erfs_segmentationUI <- function(id, options) {
 
     # initialize namespace
     ns <- NS(id)
     
     # override missing options to module defaults
-    options <- setDefaultOptions(options, stepModuleInfo$protAtac_segmentation)
+    options <- setDefaultOptions(options, stepModuleInfo$erfs_segmentation)
 
     # return the UI contents
     standardSequentialTabItem(

@@ -1,15 +1,15 @@
 #----------------------------------------------------------------------
-# UI components for the protAtac_txnCorrelation appStep module
+# UI components for the erfs_scoreSummary appStep module
 #----------------------------------------------------------------------
 
 # module ui function
-protAtac_txnCorrelationUI <- function(id, options) {
+erfs_scoreSummaryUI <- function(id, options) {
 
     # initialize namespace
     ns <- NS(id)
     
     # override missing options to module defaults
-    options <- setDefaultOptions(options, stepModuleInfo$protAtac_txnCorrelation)
+    options <- setDefaultOptions(options, stepModuleInfo$erfs_scoreSummary)
 
     # return the UI contents
     standardSequentialTabItem(
@@ -34,14 +34,6 @@ protAtac_txnCorrelationUI <- function(id, options) {
                 width = 6, 
                 collapsible = FALSE,
                 inFluidRow = FALSE
-            ),
-            bufferedTableUI(
-                ns("sample"),
-                "Sample",
-                width = 6,
-                solidHeader = TRUE,
-                status = "primary",
-                collapsible = FALSE
             )
         ),
         fluidRow(
@@ -55,14 +47,14 @@ protAtac_txnCorrelationUI <- function(id, options) {
                     ns("scoreType"),
                     "Score Type",
                     choiceNames  = c(
-                        "GC Residual Z Score", 
-                        "Intermediate Insert Size Fraction",
-                        "Protamine Enrichment NRLL"
+                        # "Fraction GC",  
+                        "GC Residual Z Score"
+                        # "GC Residual Bias" 
                     ),
                     choiceValues = c(
-                        "gcrz", 
-                        "iisf",
-                        "nrll"
+                        # "gc", 
+                        "gcrz"
+                        # "gcrz_bias"
                     ),
                     selected = "gcrz",
                     inline = TRUE,
@@ -72,8 +64,17 @@ protAtac_txnCorrelationUI <- function(id, options) {
         ),
         fluidRow(
             staticPlotBoxUI(
-                ns("txnCorrelationPlot"), 
-                "Transcription Correlation",
+                ns("sampleDistributionPlot"), 
+                "Sample Distributions",
+                width = 6,
+                status = "primary",
+                collapsible = TRUE,
+                solidHeader = TRUE,
+                collapsed = FALSE
+            ),
+            staticPlotBoxUI(
+                ns("sampleDeltaDistributionPlot"), 
+                "Gene Target Delta Distributions",
                 width = 6,
                 status = "primary",
                 collapsible = TRUE,

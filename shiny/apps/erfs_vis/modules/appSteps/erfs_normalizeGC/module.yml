@@ -1,16 +1,16 @@
 #----------------------------------------------------------------------
 # ui
 #----------------------------------------------------------------------
-shortLabel:       "Transcription" # shown on dashboard menu 
-shortDescription: "Correlate samples scores to round spermatid nascent transcription." # shown on Overview page
-longLabel:        "Correlate scores to transcription" # shown at top of appStep page 
+shortLabel:       "Normalize GC" # shown on dashboard menu 
+shortDescription: "Use interactive plots to set the GC bias normalization of individual samples." # shown on Overview page
+longLabel:        "Normalize GC bias" # shown at top of appStep page 
 
 #----------------------------------------------------------------------
 # server
 #----------------------------------------------------------------------
 types: # names of the type(s) of this module ...
-    - txnCorrelation
-sourceTypes: upload # ... and of the module(s) on which it depends
+    - erfs_normalizeGC
+sourceTypes: null # ... and of the module(s) on which it depends
 
 #----------------------------------------------------------------------
 # dependencies
@@ -29,17 +29,14 @@ packages: # required R packages
 #----------------------------------------------------------------------
 # module-level settings
 #----------------------------------------------------------------------
-# settings:
-#     Insert_Sizes:
-#         Aggregate_Samples_By_Stage:
-#             type: checkboxInput
-#             value: false 
-#         Normalize_To_Spike_In:
-#             type: checkboxInput
-#             value: false 
-#         <settingName>:
-#             type:   textInput
-#             value:  abc  
+settings:
+    GC_Bias:
+        N_Plotted_Bins:
+            type:   numericInput
+            value:  20000
+            min:    5000
+            max:    50000
+            step:   5000
 #         <settingName>:
 #             type:   numericInput
 #             value:  1

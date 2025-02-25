@@ -1,1 +1,1 @@
-App to examine spermatid ATAC-seq data for promatine analysis.
+App to examine ERFS MiDAS-seq data.

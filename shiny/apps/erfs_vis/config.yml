@@ -3,7 +3,7 @@
 # app metadata
 #----------------------------------------------------------------------
 name: protAtac
-description: "Normalize and visualize protamine ATAC-seq data over multiple samples"
+description: "Normalize and visualize MiDAS-seq data over multiple samples"
 version: v0.0.0
 # suiteVersions:
 #     suiteName: v0.0.0
@@ -13,16 +13,18 @@ version: v0.0.0
 # the keys in uploadTypes are matched to key uploadType in incoming package.yml
 #----------------------------------------------------------------------
 uploadTypes:
-    protamine-atac: 
+    erfd-midas-seq: 
         contentFileTypes: # anything not listed will not be available to the app
             binCounts:
                 required: true
-            insertSizes:
+            externalCalls:
                 required: true
-            scores:
-                required: true
-            segmentation:
-                required: false
+            # insertSizes:
+            #     required: true
+            # scores:
+            #     required: true
+            # segmentation:
+            #     required: false
 
 #----------------------------------------------------------------------
 # labels and definitions for all sequential analysis steps shown in sidebar
@@ -39,20 +41,11 @@ uploadTypes:
 appSteps:
     upload: # nearly always the 1st step of every app
         module: sourceFileUpload
+    copyNumber:
+        module: erfs_copyNumber
     normalizeGC:
-        module: protAtac_normalizeGC
-    insertSizes:
-        module: protAtac_insertSizes
-    scoreSummary:
-        module: protAtac_scoreSummary
-    txnCorrelation:
-        module: protAtac_txnCorrelation
+        module: erfs_normalizeGC
+    # scoreSummary:
+    #     module: erfs_scoreSummary
     browser:
         module: genomex-mdi-tools//trackBrowser
-    segmentation:
-        module: protAtac_segmentation
-        # options:
-        #     tracks:
-        #         - svWGS # svWGS tracks are shared in global/classes/browserTracks
-        #         - genomex-mdi-tools//read_pileup
-        #         - bruseq-mdi-tools//BruSeq_generic

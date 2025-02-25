@@ -1,18 +1,18 @@
 #----------------------------------------------------------------------
-# server components for the protAtac_txnCorrelation appStep module
+# server components for the erfs_copyNumber appStep module
 #----------------------------------------------------------------------
 
 #----------------------------------------------------------------------
 # BEGIN MODULE SERVER
 #----------------------------------------------------------------------
-protAtac_txnCorrelationServer <- function(id, options, bookmark, locks) { 
+erfs_copyNumberServer <- function(id, options, bookmark, locks) { 
     moduleServer(id, function(input, output, session) {    
 #----------------------------------------------------------------------
 
 #----------------------------------------------------------------------
 # initialize module
 #----------------------------------------------------------------------
-module <- 'protAtac_txnCorrelation'
+module <- 'erfs_copyNumber'
 appStepDir <- getAppStepDir(module)
 options <- setDefaultOptions(options, stepModuleInfo[[module]])
 settings <- activateMdiHeaderLinks( # uncomment as needed
@@ -21,21 +21,18 @@ settings <- activateMdiHeaderLinks( # uncomment as needed
     # dir = appStepDir, # for terminal emulator
     envir = environment(), # for R console
     baseDirs = appStepDir, # for code viewer/editor
-    # settings = id, # for step-level settings
+    settings = id, # for step-level settings
     # immediate = TRUE # plus any other arguments passed to settingsServer()
 )
 
 #----------------------------------------------------------------------
-# data sources
+# data package sources and source-level data objects derived from pipeline
 #----------------------------------------------------------------------
-sourceId <- dataSourceTableServer(
-    "dataSourceTable", 
-    selection = "single"
-) 
+sourceId <- dataSourceTableServer("source", selection = "single")
 samples <- reactive({ # vector of the names of all co-analyzed samples
     sourceId <- sourceId()
     req(sourceId)
-    paBinData(sourceId)$samples
+    data.table(sample_name = names(erfsBinData(sourceId)$samples))
 })
 
 #----------------------------------------------------------------------
@@ -45,74 +42,71 @@ sampleTable <- bufferedTableServer(
     "sample",
     id,
     input,
-    tableData = reactive( samples()[, .(sample_name, stage)] ),
+    tableData = samples,
     selection = 'single',
     options = list(
         paging = FALSE,
         searching = FALSE  
     )
 )
-sampleToPlot <- reactive({
+sample <- reactive({
     row <- sampleTable$rows_selected()
     req(row)
     samples()[row]
 })
 
 #----------------------------------------------------------------------
-# plot outputs
+# interactive GC bias plots, selection cascades to solving negative binomial
 #----------------------------------------------------------------------
-txnCorrelationPlot <- staticPlotBoxServer(
-    "txnCorrelationPlot",
-    maxHeight = "400px",
-    points   = TRUE,
-    legend  = FALSE,
-    margins = TRUE,
-    title   = TRUE,
-    create = function() {
-        sourceId <- sourceId()
-        req(sourceId)
-        sampleToPlot <- sampleToPlot()
-        req(sampleToPlot)
-        xScore <- getGenomeScores(sourceId, "txn")[[1]]$score
-        yScore <- getSampleScores(sourceId, input$scoreType, sampleToPlot)[[1]]$score
-        I <- sample(1:length(xScore), 20000)
-        xScore <- xScore[I]
-        yScore <- yScore[I]
-        fit <- lm(yScore ~ xScore)
-        startSpinner(session, message = "plotting")
-        txnCorrelationPlot$initializeFrame(
-            xlim = c(-2, 2),
-            ylim = range(yScore, na.rm = TRUE),
-            xlab = paste(scoreTypes$genome$txn$label, scoreTypes$genome$txn$unit),
-            ylab = paste(scoreTypes$sample[[input$scoreType]]$label, scoreTypes$sample[[input$scoreType]]$unit)
-        )
-        txnCorrelationPlot$addPoints(
-            x   = xScore,
-            y   = yScore,
-            col = rgb(0, 0, 0, 0.25),
-            pch = 16,
-            cex = 0.25
-        )
-        txnCorrelationPlot$addLine(
-            x = c(-2, 2),
-            y = c(-2, 2) * coef(fit)[2] + coef(fit)[1],
-            col = paColors$BLUE,
-            lwd = 1.5
-        )
+binCountsPlotData <- function(){
+    sourceId <- sourceId()
+    sample <- sample()
+    req(sourceId, sample)
+    startSpinner(session, message = paste("plotting", sample$sample_name))
+    bd <- erfsBinData(sourceId)
+    trainingRegions <- getTrainingRegions(sample$sample_name)
+    do.call(rbind, lapply(1:length(cnColors), function(CN){
+        trs <- trainingRegions[copy_number == CN]
+        do.call(rbind, lapply(1:nrow(trs),function(i){ 
+            I <- bd$binCounts[, 
+                excluded == 0 & 
+                chrom  == trs[i, chrom] &
+                start0 >= trs[i, start0] &
+                end1   <= trs[i, end1]
+            ]
+            agg <- data.table(binCount = bd$binCounts[I][[sample$sample_name]])[,
+                .N,
+                by = .(binCount)
+            ]
+            data.table(
+                x = agg$binCount,
+                y = agg$N / sum(agg$N, na.rm = TRUE),
+                color = cnColors[CN]
+            )   
+        }))
+    }))
+}
+binCountsPlot <- interactiveScatterplotServer(
+    "binCountsPlot",
+    plotData = reactive({ 
+        x <- binCountsPlotData() 
         stopSpinner(session)
-    }
+        x
+    }),
+    pointSize = 6,
+    accelerate = TRUE,
+    xtitle = "Bin Count",
+    xrange = c(0,60),
+    ytitle = "Frequency",
 )
+
 #----------------------------------------------------------------------
 # define bookmarking actions
 #----------------------------------------------------------------------
 bookmarkObserver <- observe({
     bm <- getModuleBookmark(id, module, bookmark, locks)
     req(bm)
-    # settings$replace(bm$settings)
-    if(!is.null(bm$outcomes)){
-        # genomePlot$settings$replace(bm$outcomes$genomePlotSettings)
-        # spikeInPlot$settings$replace(bm$outcomes$spikeInPlotSettings)
-    }
+    settings$replace(bm$settings)
     # updateTextInput(session, 'xxx', value = bm$outcomes$xxx)
     # xxx <- bm$outcomes$xxx
     bookmarkObserver$destroy()
@@ -123,11 +117,8 @@ bookmarkObserver <- observe({
 #----------------------------------------------------------------------
 list(
     input = input,
-    # settings = settings$all_,
-    outcomes = list(
-        # genomePlotSettings  = genomePlot$settings$all_,
-        # spikeInPlotSettings = spikeInPlot$settings$all_
-    ),
+    settings = settings$all_,
+    outcomes = list(),
     # isReady = reactive({ getStepReadiness(options$source, ...) }),
     NULL
 )

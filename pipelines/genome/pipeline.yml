@@ -1,34 +1,19 @@
 ---
 pipeline:
     name: genome
-    description: "download and prepare genome files for binned analysis"
+    description: "prepare genome files for binned analysis"
     # version: v0.0.1
 # suiteVersions:
 #     suiteName: v0.0.0
 actions: 
     _global:   
-        environment: protamine-tools
+        environment: erfs-mdi-tools
         condaFamilies:
             - base
             - genomics
             - r-4.4
-    download:
-        order: 1
-        optionFamilies:
-            - download-genome
-            - annotation
-        resources:
-            required:
-                total-ram: 8G
-            recommended: 
-                n-cpu: 1
-                ram-per-cpu: 8G
-        job-manager:
-            recommended:
-                time-limit: 1:00:00
-        description: "download genomes and required support files"
     bin:
-        order: 2
+        order: 1
         optionFamilies:
             - genome
             - bin
@@ -42,8 +27,3 @@ actions:
             recommended:
                 time-limit: 1:00:00
         description: "create genome-level bin files on nuclear chroms with exclusion flag and percent GC"
-container:
-    supported: false
-    registry:  ghcr.io  # domain name of your OCI-compatible, oras-accessible, container registry [ghcr.io]
-    owner:     xxxxxxxx # the name of the owner, e.g., user or organization, at 'registry'
-    installer: apt-get  # the installer program used by the container OS, typically apt-get or yum [apt-get]
