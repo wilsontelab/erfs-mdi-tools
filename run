@@ -37,7 +37,7 @@ if [ "$IS_READLINK" != "" ]; then export MDI_DIR=`readlink -f $MDI_DIR` ; fi
 if [ "$SUITE_MODE" = "$MDI_CENTRIC" ]; then
     echo -e "\nNothing to do.\n"
     echo -e "This copy of '$SUITE_NAME' is part of an MDI installation in directory:\n    $MDI_DIR\n"
-    echo -e "Use it by calling the 'mdi' command line utility in that directory (multi-suite installation)\n"
+    echo -e "Use it by calling the 'mdi' command line utility in that directory (multi-suite installation)"
     echo -e "or the 'run' script in the parent of that directory (single suite installation).\n"
     exit 1
 fi

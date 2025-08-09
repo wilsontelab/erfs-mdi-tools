@@ -26,9 +26,9 @@ if( !-f "$MDI_DIR/mdi" or !-d "$MDI_DIR/frameworks" or !-d "$MDI_DIR/suites" ) {
     $SUITE_MODE = $SUITE_CENTRIC; # i.e., this is the top-level of a single-suite installation
 }
 if( $SUITE_MODE eq $MDI_CENTRIC ) {
-    print STDERR "\nNothing to do.\n";
-    print STDERR "This copy of the tool suite is part of an MDI installation in directory:\n    $MDI_DIR\n";
-    print STDERR "This alias.pl script is only useful in the top directory of a single-suite installation.\n";
+    print STDERR "\nNothing to do.\n\n";
+    print STDERR "This copy of the tool suite is part of an MDI installation in directory:\n    $MDI_DIR\n\n";
+    print STDERR "This alias.pl script is only useful in the top directory of a single-suite installation.\n\n";
     exit 1;
 }
 
